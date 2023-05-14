@@ -476,6 +476,8 @@ const weatherPrompts = {
 
     // Annotation:
     // Write your annotation here as a comment
+    // chaining filter and map together enabled me to grab the nice
+    // weather then reformat it.
   },
 
   findHighestHumidity() {
@@ -491,13 +493,13 @@ const weatherPrompts = {
     // find the highest humidity and return an object
     let humidity = weather.map(weather=> weather.humidity)
     let highestHumidity = weather.filter(weather=>weather.humidity === Math.max(...humidity)).reduce((acc, curr) => acc = curr,{})
-    
-    // console.log(Math.max(...highestHumidity))
     return highestHumidity
     
 
     // Annotation:
     // Write your annotation here as a comment
+    // Math.max searches through an array of numbers for the highest number and returns it
+    // 
 
   }
 };
@@ -525,10 +527,8 @@ const nationalParksPrompts = {
     //  and an array of strings as the value
 
     let toDoList = nationalParks.reduce((acc, curr)=> {
-      if(!acc.parksToVisit) {
+      if(!acc.parksToVisit || !acc.parksVisited) {
         acc.parksToVisit = []
-      }
-      if (!acc.parksVisited) {
         acc.parksVisited = []
       }
       if (curr.visited){
@@ -542,6 +542,8 @@ const nationalParksPrompts = {
 
     // Annotation:
     // Write your annotation here as a comment
+    // i refactored three statements to one because is either
+    //  condition was met then the keys would be added and assigned
   },
 
   getParkInEachState() {
@@ -555,9 +557,25 @@ const nationalParksPrompts = {
 
 
     /* CODE GOES HERE */
+    // this should return an array with object pairs as location and name
+    let arr = nationalParks.map((park) => {
+      if (!park[park.location]){
+        park[park.location] = park.name
+      }
+      if (park.name){
+        delete park.name
+        delete park.location
+        delete park.visited
+        delete park.activities
+      }
+      return park
+    })
+    return arr
 
     // Annotation:
     // Write your annotation here as a comment
+    // i tried using reduce to automatically delete the other keys
+    //  in the objects but was unsuccessful. delete was the only way. 
   },
 
   getParkActivities() {
@@ -577,9 +595,21 @@ const nationalParksPrompts = {
     //   'rock climbing' ]
 
     /* CODE GOES HERE */
+    // return an array of different size and content,
+    //  could be possible with map and filter.
+    let activityArr = nationalParks.reduce((activities,park)=>{
+      park.activities.map(activity=>{
+        if (!activities.includes(activity))
+        activities.push(activity)
+      })
+      return activities
+    },[])
+    return activityArr
+
 
     // Annotation:
     // Write your annotation here as a comment
+    // this was super confusing
   }
 };
 
@@ -603,6 +633,11 @@ const breweryPrompts = {
     // 40
 
     /* CODE GOES HERE */
+    let count = breweries.reduce((total,brewery) => {
+      total += brewery.beers.length
+      return total
+    }, 0)
+    return count
 
     // Annotation:
     // Write your annotation here as a comment
@@ -618,9 +653,22 @@ const breweryPrompts = {
     // ]
 
     /* CODE GOES HERE */
+    // use map to return same length arr, use .length to count beers
+    let count = breweries.map(brewery=> {
+      brewery = {
+        name: brewery.name,
+        beerCount: brewery.beers.length
+      }
+      // brewery.beerCount = brewery.beers.length
+      return brewery
+    })
+    return count
 
     // Annotation:
     // Write your annotation here as a comment
+    // dont forget to return on map methods
+    // delete permenently deletes the key from the data model
+    // ie not dynamic
   },
 
   getSingleBreweryBeerCount(breweryName) {
@@ -630,9 +678,19 @@ const breweryPrompts = {
 
 
     /* CODE GOES HERE */
+    //  reduce returns one thing lets try
+    let total = breweries.reduce((acc, brewery)=> {
+      if (brewery.name === breweryName){
+         return acc = brewery.beers.length
+      } 
+      return acc
+    }, 0)
+    return total
 
     // Annotation:
     // Write your annotation here as a comment
+    // a previous function used delete and ruined the data model
+    // moral of the story dont use delete.
   },
 
   findHighestAbvBeer() {
@@ -641,6 +699,17 @@ const breweryPrompts = {
     // { name: 'Barrel Aged Nature\'s Sweater', type: 'Barley Wine', abv: 10.9, ibu: 40 }
 
     /* CODE GOES HERE */
+    // search through an array inside an object inside an array 
+    // breweries[brewery.beers[obj.abv]]
+    // for a number and check if that number is the highest of all the numbers.
+   let allBeers = breweries.map(brewery=> {
+     return brewery.beers
+    })
+    let concatBeers = [].concat(...allBeers)
+    let allAbvs = concatBeers.map(beer=> beer.abv)
+    let highestABV = Math.max(...allAbvs)
+    let highestBeer = concatBeers.find(beer=> beer.abv === highestABV)
+    return highestBeer 
 
     // Annotation:
     // Write your annotation here as a comment
@@ -663,6 +732,9 @@ const boardGamePrompts = {
     // ["Chess", "Catan", "Checkers", "Pandemic", "Battle Ship", "Azul", "Ticket to Ride"]
 
     /* CODE GOES HERE */
+  //  if a key is input, a list of names is returned
+  let typeNames = boardGames[type].map(type=>type.name)
+  return typeNames
 
     // Annotation:
     // Write your annotation here as a comment
@@ -675,6 +747,8 @@ const boardGamePrompts = {
     // ["Candy Land", "Connect Four", "Operation", "Trouble"]
 
     /* CODE GOES HERE */
+    let typeNames = boardGames[type].map(type=>type.name).sort()
+    return typeNames
 
     // Annotation:
     // Write your annotation here as a comment
@@ -686,6 +760,15 @@ const boardGamePrompts = {
     // { name: 'Codenames', rating: 7.4, maxPlayers: 8 },
 
     /* CODE GOES HERE */
+    // obj to object find highest rating by type
+    let numRatings = boardGames[type].map(obj=>{
+      return obj.rating
+    })
+    let highestNumber = Math.max(...numRatings)
+    let highestRating = boardGames[type].find(item=>{
+      return item.rating === highestNumber
+    })
+    return highestRating
 
     // Annotation:
     // Write your annotation here as a comment
@@ -697,6 +780,12 @@ const boardGamePrompts = {
     // note: do not worry about rounding your result.
 
     /* CODE GOES HERE */
+    let total = boardGames[type].reduce((num, obj)=> {
+      num += obj.rating
+      return num
+    }, 0)
+    let avg = total/boardGames[type].length
+    return avg
 
     // Annotation:
     // Write your annotation here as a comment
@@ -709,6 +798,20 @@ const boardGamePrompts = {
     // note: do not worry about rounding your result.
 
     /* CODE GOES HERE */
+    let total = boardGames[type].reduce((num, obj)=> {
+      if (obj.maxPlayers === maximumPlayers){
+        num += obj.rating
+      }
+      return num
+    }, 0)
+    let numOfMax = boardGames[type].reduce((acc,curr)=> {
+      if(curr.maxPlayers === maximumPlayers){
+        acc+=1
+      }
+      return acc
+    },0)
+    let avg = total/numOfMax
+    return avg
 
     // Annotation:
     // Write your annotation here as a comment
@@ -756,6 +859,7 @@ const turingPrompts = {
     // ]
 
     /* CODE GOES HERE */
+
 
     // Annotation:
     // Write your annotation here as a comment
